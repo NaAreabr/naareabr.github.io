@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Milhas e Otimizador de Pontos</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-SEU_ID_AQUI" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            color: #004691;
+            margin-bottom: 25px;
+        }
+        h3 {
+            color: #004691;
+            border-bottom: 2px solid #eef5ff;
+            padding-bottom: 8px;
+            margin-top: 25px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+        }
+        .disabled-label {
+            color: #aaa;
+            text-decoration: line-through;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffaa00;
+            color: #004691;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #e69900;
+        }
+        .resultado {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #eef5ff;
+            border-left: 5px solid #004691;
+            border-radius: 4px;
+            display: none;
+        }
+        .resultado h4 {
+            margin: 0 0 10px 0;
+            color: #004691;
+        }
+        .detalhes-calculo {
+            font-size: 14px;
+            color: #555;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        #blocoFatorManual {
+            background-color: #fff9e6;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px dashed #ffaa00;
+            display: none;
+        }
+
+        /* CONFIGURAÇÃO DOS ESPAÇOS DE ANÚNCIOS */
+        .area-ad {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="area-ad">
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:728px;height:90px"
+             data-ad-client="ca-pub-SEU_ID_AQUI"
+             data-ad-slot="ID_DO_SLOT_DE_TOPO_AQUI"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="container">
+        <h2>Simulador e Otimizador de Milhas</h2>
+        
+        <h3>1. Dados de Consumo e Mercado</h3>
+        <div class="row">
+            <div class="col form-group">
+                <label for="valorFatura">Valor da Fatura Mensal (R$):</label>
+                <input type="number" id="valorFatura" step="0.01" placeholder="Ex: 11213.57">
+            </div>
+            <div class="col form-group">
+                <label for="valorDolar">Cotação do Dólar Comercial (US$):</label>
+                <input type="number" id="valorDolar" step="0.01" placeholder="Buscando cotação...">
+            </div>
+        </div>
+
+        <h3>2. Cenário A: Cartões Co-Branded das Cias Aéreas</h3>
+        <div class="form-group">
+            <label for="tipoCartao">Selecione o Cartão Parceiro:</label>
+            <select id="tipoCartao" onchange="verificarRegrasCartao()">
+                <option value="">--- Escolha o Cartão Co-Branded ---</option>
+                <optgroup label="Azul Linhas Aéreas">
+                    <option value="azul_infinite">Azul Itaú Visa Infinite / Skyline (3.0 a 4.5 pts)</option>
+                    <option value="azul_platinum">Azul Itaú Platinum (2.2 a 3.3 pts)</option>
+                    <option value="azul_gold">Azul Itaú Gold (1.7 a 2.55 pts)</option>
+                    <option value="azul_internacional">Azul Itaú Internacional (1.4 a 2.1 pts)</option>
+                </optgroup>
+                <optgroup label="LATAM Pass">
+                    <option value="latam_infinite">LATAM Pass Itaú Black / Infinite (2.5 a 3.7 pts)</option>
+                    <option value="latam_platinum">LATAM Pass Itaú Platinum (2.0 a 3.0 pts)</option>
+                    <option value="latam_gold">LATAM Pass Itaú Gold (1.5 a 2.2 pts)</option>
+                    <option value="latam_internacional">LATAM Pass Itaú Internacional (1.3 a 1.9 pts)</option>
+                </optgroup>
+                <optgroup label="GOL Smiles">
+                    <option value="smiles_infinite">GOL Smiles Visa Infinite (3.0 a 7.0 milhas)</option>
+                    <option value="smiles_platinum">GOL Smiles Visa Platinum (2.3 a 5.0 milhas)</option>
+                    <option value="smiles_gold">GOL Smiles Visa Gold (1.8 a 3.0 milhas)</option>
+                    <option value="smiles_internacional">GOL Smiles Visa Internacional (1.3 a 2.0 milhas)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="possuiClube">
+            <label for="possuiClube">Sou Assinante do Clube do Cartão acima</label>
+        </div>
+
+        <div class="form-group checkbox-group" id="blocoAcelerador">
+            <input type="checkbox" id="aceleradorAtivo">
+            <label for="aceleradorAtivo" id="labelAcelerador">Acelerador de Pontos Itaú Ativo (+ custo, dobra a pontuação)</label>
+        </div>
+
+        <button onclick="calcularCoBranded()">Calcular Acúmulo Direto</button>
+
+        <div class="resultado" id="resultadoCoBranded">
+            <h4>Resultado Co-Branded</h4>
+            <p>Você vai receber aproximadamente: <strong id="milhasFinaisCoBranded">0</strong> pontos/milhas.</p>
+            <div class="detalhes-calculo" id="detalhesCoBranded"></div>
+        </div>
+
+        <div class="area-ad" style="min-height: 250px;">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-SEU_ID_AQUI"
+                 data-ad-slot="ID_DO_SLOT_DE_CONTEUDO_AQUI"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <h3>3. Cenário B: Cartões de Bancos & Programas de Recompensa</h3>
+        <div class="form-group">
+            <label for="cartaoBanco">Selecione o Cartão (Ordenado pelo Ranking Pontos/Milhas):</label>
+            <select id="cartaoBanco" onchange="verificarPontuacaoVariavel()">
+                <option value="">--- Escolha o Cartão Bancário ---</option>
+                <option value="bradesco_centurion">1º) Bradesco American Express Centurion (5.0 a 7.0 pts Variável)</option>
+                <option value="brb_dux">2º) BRB DUX Visa Infinite (4.0 pts)</option>
+                <option value="caixa_icone">3º) Caixa Ícone Visa Infinite (5.0 pts)</option>
+                <option value="bb_altus">4º) Banco do Brasil Altus Visa Infinite (4.0 a 5.0 pts Variável)</option>
+                <option value="bradesco_aeternum">5º) Bradesco Aeternum Visa Infinite (4.0 pts)</option>
+                <option value="sicoob_zenith">6º) Sicoob Zenith Visa Infinite (4.0 pts)</option>
+                <option value="itau_the_one">7º) Itaú The One Visa Infinite / Black Private (3.0 a 3.5 pts Variável)</option>
+                <option value="santander_centurion">8º) Santander American Express Centurion (Até 4.2 pts Variável)</option>
+                <option value="unicred_impar">9º) Unicred Ímpar Visa Infinite (3.5 a 4.5 pts Variável)</option>
+                <option value="xp_legacy">10º) XP Legacy Visa Infinite (3.0 a 4.0 pts Variável)</option>
+                <option value="banescard_infinite">11º) Banescard Visa Infinite (2.7 pts)</option>
+                <option value="btg_ultrablue">12º) BTG Pactual Ultrablue Mastercard Black (3.0 a 3.5 pts Variável)</option>
+                <option value="santander_unlimited">13º) Santander Unlimited Black / Infinite (3.0 pts)</option>
+                <option value="nordeste_infinite">14º) Banco do Nordeste Visa Infinite (3.0 pts)</option>
+                <option value="porto_infinite">15º) Porto Bank Visa Infinite (2.2 a 3.5 pts Variável)</option>
+                <option value="bradesco_prime_infinite">16º) Bradesco Prime Visa Infinite / Black (2.2 a 3.0 pts Variável)</option>
+                <option value="safra_infinite">17º) Safra Visa Infinite (2.0 a 3.0 pts Variável)</option>
+                <option value="caixa_diners">18º) Caixa Elo Diners Club (2.2 pts)</option>
+                <option value="bb_elo_diners">19º) Ourocard Elo Diners Club (2.2 pts)</option>
+                <option value="bradesco_diners">20º) Bradesco Elo Diners Club (2.2 pts)</option>
+                <option value="itau_personnalite_infinite">21º) Itaú Personnalité Visa Infinite / Black (2.5 pts)</option>
+                <option value="c6_carbon">22º) C6 Bank Carbon Mastercard Black (2.5 pts)</option>
+                <option value="sicredi_black">23º) Sicredi Mastercard Black (2.0 pts)</option>
+                <option value="inter_black">24º) Inter Mastercard Black / Loop (2.0 pts)</option>
+                <option value="modalmais_black">25º) Modalmais Visa Infinite (1.5 a 2.0 pts Variável)</option>
+                <option value="bmg_black">26º) BMG Mastercard Black (2.0 pts)</option>
+                <option value="credisis_infinite">27º) CrediSIS Visa Infinite (2.0 pts)</option>
+                <option value="uniprime_black">28º) Uniprime Mastercard Black (2.0 pts)</option>
+                <option value="daycoval_black">29º) Daycoval Mastercard Black (2.0 pts)</option>
+                <option value="bradesco_nanquim">30º) Bradesco Elo Nanquim (2.2 pts)</option>
+                <option value="bb_nanquim">31º) Ourocard Elo Nanquim (2.2 pts)</option>
+                <option value="caixa_nanquim">32º) Caixa Elo Nanquim (2.3 pts)</option>
+                <option value="santander_unique">33º) Santander Unique Black / Infinite (2.0 pts)</option>
+                <option value="bancoob_black">34º) Sicoob Mastercard Black (2.0 pts)</option>
+                <option value="banrisul_infinite">35º) Banrisul Visa Infinite / Black (2.0 pts)</option>
+                <option value="caixa_infinite">36º) Caixa Visa Infinite / Black (2.1 pts)</option>
+                <option value="brb_infinite">37º) BRB Visa Infinite / Black (2.0 pts)</option>
+                <option value="original_black">38º) Banco Original Mastercard Black (1.5 pts)</option>
+                <option value="votorantim_infinite">39º) BV Visa Infinite (1.75 pts)</option>
+                <option value="nubank_ultravioleta">40º) Nubank Ultravioleta (1.0 pt por R$ 3,00 gasto)</option>
+                <option value="amazon_prime">41º) Amazon Prime Mastercard Platinum (1.5 pts)</option>
+                <option value="btg_black_opcao">42º) BTG Pactual Black Opção Pontos (1.5 a 2.0 pts Variável)</option>
+                <option value="bradesco_platinum">43º) Bradesco Platinum Padrão (1.5 pts)</option>
+                <option value="bb_platinum">44º) Ourocard Visa/Master Platinum (1.5 pts)</option>
+                <option value="santander_platinum">45º) Santander Select Platinum (1.5 pts)</option>
+                <option value="caixa_platinum">46º) Caixa Visa/Master Platinum (1.4 pts)</option>
+                <option value="itau_click">47º) Itaucard Click Platinum Opção Pontos (1.0 pt)</option>
+                <option value="c6_platinum">48º) C6 Bank Platinum (1.0 pt)</option>
+                <option value="inter_gold">49º) Inter Gold / Loop Padrão (0.5 pt)</option>
+                <option value="digio_livelo">50º) Digio com plano DigioLivelo ativo (1.0 pt)</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="blocoFatorManual">
+            <label for="fatorPontuacaoManual">Ajuste a pontuação por dólar deste cartão:</label>
+            <input type="number" id="fatorPontuacaoManual" step="0.1" value="3.5">
+            <small style="color:#666;">*Este cartão possui regras variáveis. Ajuste conforme sua média de gastos.</small>
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label for="programaDestino">Enviar Pontos para qual Companhia?</label>
+                <select id="programaDestino" onchange="atualizarBonusPredefinido()">
+                    <option value="azul">Azul (TudoAzul)</option>
+                    <option value="smiles">Smiles (GOL)</option>
+                    <option value="latam">LATAM Pass</option>
+                    <option value="avios">Avios (Iberia / British Airways)</option>
+                    <option value="tap">TAP Miles & Go</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <label for="percentualBonus">Percentual de Bônus (%):</label>
+                <input type="number" id="percentualBonus" min="0" max="400" value="110">
+            </div>
+        </div>
+
+        <button onclick="calcularTransferencia()">Simular Transferência Bonificada</button>
+
+        <div class="resultado" id="resultadoTransferencia">
+            <h4>Previsão da Transferência Bancária</h4>
+            <p>Pontos acumulados na conta do banco: <strong id="pontosBanco">0</strong> pontos.</p>
+            <p>Total recebido após envio bonificado: <strong id="milhasFinaisTransferencia">0</strong> milhas no destino.</p>
+            <div class="detalhes-calculo" id="detalhesTransferencia"></div>
+        </div>
+    </div>
+
+<script>
+    async function buscarDolar() {
+        try {
+            const resposta = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+            const dados = await resposta.json();
+            const cotacao = parseFloat(dados.USDBRL.bid);
+            document.getElementById('valorDolar').value = cotacao.toFixed(2);
+        } catch (erro) {
+            console.error("Erro no câmbio:", erro);
+            document.getElementById('valorDolar').value = "5.03"; 
+        }
+    }
+
+    function verificarRegrasCartao() {
+        const tipoCartao = document.getElementById('tipoCartao').value;
+        const checkboxAcelerador = document.getElementById('aceleradorAtivo');
+        const labelAcelerador = document.getElementById('labelAcelerador');
+
+        if (!tipoCartao) return;
+
+        if (tipoCartao.startsWith('smiles')) {
+            checkboxAcelerador.checked = false;
+            checkboxAcelerador.disabled = true;
+            labelAcelerador.classList.add('disabled-label');
+        } else {
+            checkboxAcelerador.disabled = false;
+            labelAcelerador.classList.remove('disabled-label');
+        }
+    }
+
+    function verificarPontuacaoVariavel() {
+        const idCartao = document.getElementById('cartaoBanco').value;
+        const blocoManual = document.getElementById('blocoFatorManual');
+        const inputManual = document.getElementById('fatorPontuacaoManual');
+
+        if (!idCartao) {
+            blocoManual.style.display = 'none';
+            return;
+        }
+
+        const cartoesVariaveis = [
+            'bradesco_centurion', 'bb_altus', 'itau_the_one', 'santander_centurion', 
+            'unicred_impar', 'xp_legacy', 'btg_ultrablue', 'porto_infinite', 
+            'bradesco_prime_infinite', 'safra_infinite', 'modalmais_black', 'btg_black_opcao'
+        ];
+
+        if (cartoesVariaveis.includes(idCartao)) {
+            blocoManual.style.display = 'block';
+            if (idCartao === 'bradesco_centurion') inputManual.value = "5.0";
+            else if (idCartao === 'bb_altus') inputManual.value = "4.0";
+            else if (idCartao === 'unicred_impar') inputManual.value = "3.5";
+            else if (idCartao === 'itau_the_one') inputManual.value = "3.0";
+            else inputManual.value = "2.5";
+        } else {
+            blocoManual.style.display = 'none';
+        }
+    }
+
+    function atualizarBonusPredefinido() {
+        const programa = document.getElementById('programaDestino').value;
+        const inputBonus = document.getElementById('percentualBonus');
+
+        if (programa === 'azul' || programa === 'smiles') {
+            inputBonus.value = 110;
+        } else if (programa === 'latam') {
+            inputBonus.value = 25;
+        } else {
+            inputBonus.value = 0; 
+        }
+    }
+
+    function calcularCoBranded() {
+        const valorFatura = parseFloat(document.getElementById('valorFatura').value);
+        const valorDolar = parseFloat(document.getElementById('valorDolar').value);
+        const tipoCartao = document.getElementById('tipoCartao').value;
+        const possuiClube = document.getElementById('possuiClube').checked;
+        const aceleradorAtivo = document.getElementById('aceleradorAtivo').checked;
+
+        if (!tipoCartao) {
+            alert("Por favor, selecione um cartão válido na lista do Cenário A.");
+            return;
+        }
+
+        if (isNaN(valorFatura) || isNaN(valorDolar) || valorFatura <= 0 || valorDolar <= 0) {
+            alert("Por favor, preencha os dados da faturar e dólar no bloco 1.");
+            return;
+        }
+
+        let milhasCalculadas = 0;
+        let explicacao = "";
+
+        if (!tipoCartao.startsWith('smiles')) {
+            const gastoEmDolar = valorFatura / valorDolar;
+            let fatorPontuacao = 0;
+
+            if (tipoCartao.startsWith('azul')) {
+                switch (tipoCartao) {
+                    case 'azul_infinite': fatorPontuacao = possuiClube ? 4.5 : 3.0; break;
+                    case 'azul_platinum': fatorPontuacao = possuiClube ? 3.3 : 2.2; break;
+                    case 'azul_gold': fatorPontuacao = possuiClube ? 2.55 : 1.7; break;
+                    case 'azul_internacional': fatorPontuacao = possuiClube ? 2.1 : 1.4; break;
+                }
+            } else if (tipoCartao.startsWith('latam')) {
+                switch (tipoCartao) {
+                    case 'latam_infinite': fatorPontuacao = possuiClube ? 3.7 : 2.5; break;
+                    case 'latam_platinum': fatorPontuacao = possuiClube ? 3.0 : 2.0; break;
+                    case 'latam_gold': fatorPontuacao = possuiClube ? 2.2 : 1.5; break;
+                    case 'latam_internacional': faturacaoBase = possuiClube ? 1.9 : 1.3; break;
+                }
+            }
+
+            if (aceleradorAtivo) {
+                fatorPontuacao = fatorPontuacao * 2;
+                explicacao += `Dobrado pelo acelerador Itaú! Fator: ${fatorPontuacao} por USD.<br>`;
+            } else {
+                explicacao += `Fator utilizado: ${fatorPontuacao} por USD.<br>`;
+            }
+
+            milhasCalculadas = Math.round(gastoEmDolar * fatorPontuacao);
+            explicacao += `Conversão: US$ ${gastoEmDolar.toFixed(2)}`;
+
+        } else {
+            let fatorBase = 0; let fatorExcedente = 0; let tetoCorteReal = 0;
+
+            switch (tipoCartao) {
+                case 'smiles_infinite':
+                    fatorBase = possuiClube ? 5.5 : 3.0; fatorExcedente = possuiClube ? 7.0 : 3.0; tetoCorteReal = 10000;
+                    break;
+                case 'smiles_platinum':
+                    fatorBase = possuiClube ? 3.5 : 2.3; fatorExcedente = possuiClube ? 5.0 : 2.3; tetoCorteReal = 6000;
+                    break;
+                case 'smiles_gold':
+                    fatorBase = possuiClube ? 3.0 : 1.8; fatorExcedente = 1.8; tetoCorteReal = 0;
+                    break;
+                case 'smiles_internacional':
+                    fatorBase = possuiClube ? 2.0 : 1.3; fatorExcedente = 2.0; tetoCorteReal = 0;
+                    break;
+            }
+
+            if (tetoCorteReal === 0 || valorFatura <= tetoCorteReal || !possuiClube) {
+                const gastoEmDolar = valorFatura / valorDolar;
+                milhasCalculadas = Math.round(gastoEmDolar * fatorBase);
+                explicacao = `Calculado à taxa de ${fatorBase} por USD.<br>Conversão: US$ ${gastoEmDolar.toFixed(2)}`;
+            } else {
+                const valorBaseReal = tetoCorteReal;
+                const valorExcedenteReal = valorFatura - tetoCorteReal;
+                const dolarBase = valorBaseReal / valorDolar;
+                const dolarExcedente = valorExcedenteReal / valorDolar;
+
+                milhasCalculadas = Math.round((dolarBase * fatorBase) + (dolarExcedente * fatorExcedente));
+                explicacao = `<b>Cálculo progressivo Smiles:</b><br>` +
+                             `- Até R$ ${tetoCorteReal.toLocaleString('pt-BR')}: US$ ${dolarBase.toFixed(2)} (${fatorBase}/USD).<br>` +
+                             `- Excedente: US$ ${dolarExcedente.toFixed(2)} (${fatorExcedente}/USD).`;
+            }
+        }
+
+        document.getElementById('milhasFinaisCoBranded').innerText = milhasCalculadas.toLocaleString('pt-BR');
+        document.getElementById('detalhesCoBranded').innerHTML = explicacao;
+        document.getElementById('resultadoCoBranded').style.display = 'block';
+    }
+
+    function calcularTransferencia() {
+        const valorFatura = parseFloat(document.getElementById('valorFatura').value);
+        const valorDolar = parseFloat(document.getElementById('valorDolar').value);
+        const idCartao = document.getElementById('cartaoBanco').value;
+        const percentualBonus = parseFloat(document.getElementById('percentualBonus').value);
+        const programaDestino = document.getElementById('programaDestino').value;
+
+        if (!idCartao) {
+            alert("Por favor, selecione um cartão válido na lista do Cenário B.");
+            return;
+        }
+
+        if (isNaN(valorFatura) || isNaN(valorDolar) || valorFatura <= 0 || valorDolar <= 0) {
+            alert("Por favor, preencha os dados da fatura e dólar no bloco 1.");
+            return;
+        }
+
+        let canalManualAtivo = document.getElementById('blocoFatorManual').style.display === 'block';
+        let fConversao = 0;
+        let notaRegra = "";
+        let eCalculoDiretoReal = false; 
+        let pontosAcumuladosBanco = 0;
+
+        if (canalManualAtivo) {
+            fConversao = parseFloat(document.getElementById('fatorPontuacaoManual').value);
+            notaRegra = "Fator inserido/ajustado manualmente pelo usuário.";
+        } else {
+            switch (idCartao) {
+                case 'brb_dux': fConversao = 4.0; break;
+                case 'caixa_icone': fConversao = 5.0; break;
+                case 'bradesco_aeternum': fConversao = 4.0; break;
+                case 'sicoob_zenith': fConversao = 4.0; break;
+                case 'banescard_infinite': fConversao = 2.7; break;
+                case 'santander_unlimited': fConversao = 3.0; break;
+                case 'nordeste_infinite': fConversao = 3.0; break;
+                case 'caixa_diners':
+                case 'bb_elo_diners':
+                case 'bradesco_diners': fConversao = 2.2; break;
+                case 'itau_personnalite_infinite':
+                case 'c6_carbon': fConversao = 2.5; break;
+                case 'sicredi_black':
+                case 'inter_black':
+                case 'credisis_infinite':
+                case 'uniprime_black':
+                case 'daycoval_black':
+                case 'bancoob_black':
+                case 'banrisul_infinite':
+                case 'brb_infinite': fConversao = 2.0; break;
+                case 'caixa_nanquim': fConversao = 2.3; break;
+                case 'bradesco_nanquim':
+                case 'bb_nanquim': fConversao = 2.2; break;
+                case 'caixa_infinite': fConversao = 2.1; break;
+                case 'santander_unique': fConversao = 2.0; break;
+                case 'original_black': fConversao = 1.5; break;
+                case 'votorantim_infinite': fConversao = 1.75; break;
+                case 'amazon_prime': fConversao = 1.5; break;
+                case 'bradesco_platinum':
+                case 'bb_platinum':
+                case 'santander_platinum': fConversao = 1.5; break;
+                case 'caixa_platinum': fConversao = 1.4; break;
+                case 'itau_click':
+                case 'c6_platinum':
+                case 'digio_livelo': fConversao = 1.0; break;
+                case 'inter_gold': fConversao = 0.5; break;
+                case 'nubank_ultravioleta': 
+                    eCalculoDiretoReal = true;
+                    pontosAcumuladosBanco = Math.round(valorFatura / 3);
+                    notaRegra = "Nu Ultravioleta: 1 ponto por cada R$ 3,00 gastos.";
+                    break;
+                default: fConversao = 2.0;
+            }
+        }
+
+        const gastoEmDolar = valorFatura / valorDolar;
+        
+        if (!eCalculoDiretoReal) {
+            pontosAcumuladosBanco = Math.round(gastoEmDolar * fConversao);
+        }
+
+        const multiplicadorBonus = 1 + (percentualBonus / 100);
+        const milhasNoDestino = Math.round(pontosAcumuladosBanco * multiplicadorBonus);
+
+        let explicacao = `<b>Análise de Acúmulo Bancário:</b><br>` +
+                         `- Gasto convertido: <b>US$ ${gastoEmDolar.toFixed(2)}</b>.<br>` +
+                         `- Coeficiente do Cartão: <b>${fConversao} pts por dólar</b>.<br>` +
+                         (notaRegra ? `- <i>Regra Especial: ${notaRegra}</i><br>` : "") +
+                         `- Saldo base gerado: <b>${pontosAcumuladosBanco.toLocaleString('pt-BR')} pontos</b>.<br>` +
+                         `- Rendimento final com <b>${percentualBonus}% de bônus</b> para <b>${programaDestino.toUpperCase()}</b>.`;
+
+        document.getElementById('pontosBanco').innerText = pontosAcumuladosBanco.toLocaleString('pt-BR');
+        document.getElementById('milhasFinaisTransferencia').innerText = milhasNoDestino.toLocaleString('pt-BR');
+        document.getElementById('detalhesTransferencia').innerHTML = explicacao;
+        document.getElementById('resultadoTransferencia').style.display = 'block';
+    }
+
+    buscarDolar();
+</script>
+
+</body>
+</html>
